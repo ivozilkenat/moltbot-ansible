@@ -1,0 +1,18 @@
+---
+- name: Include Tailscale installation tasks
+  include_tasks: tailscale.yml
+
+- name: Include firewall configuration tasks
+  include_tasks: firewall.yml
+
+- name: Include user creation tasks
+  include_tasks: user.yml
+
+- name: Include Docker installation tasks
+  include_tasks: docker.yml
+
+- name: Include Node.js installation tasks
+  include_tasks: nodejs.yml
+
+- name: Include Clawdbot setup tasks
+  include_tasks: clawdbot.yml

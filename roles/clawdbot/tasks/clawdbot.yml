@@ -1,0 +1,65 @@
+---
+- name: Create Clawdbot directories
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ clawdbot_user }}"
+    group: "{{ clawdbot_user }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: "{{ clawdbot_install_dir }}", mode: '0755' }
+    - { path: "{{ clawdbot_config_dir }}", mode: '0755' }
+    - { path: "{{ clawdbot_config_dir }}/sessions", mode: '0755' }
+    - { path: "{{ clawdbot_config_dir }}/credentials", mode: '0700' }
+
+- name: Generate Clawdbot configuration files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ clawdbot_user }}"
+    group: "{{ clawdbot_user }}"
+    mode: '0644'
+    force: "{{ item.force | default(true) }}"
+  loop:
+    - { src: 'Dockerfile.j2', dest: "{{ clawdbot_install_dir }}/Dockerfile" }
+    - { src: 'docker-compose.yml.j2', dest: "{{ clawdbot_install_dir }}/docker-compose.yml" }
+    - { src: 'clawdbot-config.yml.j2', dest: "{{ clawdbot_config_dir }}/config.yml", force: false }
+
+- name: Build Clawdbot Docker image
+  community.docker.docker_image:
+    name: "{{ clawdbot_docker_image }}"
+    tag: "{{ clawdbot_docker_tag }}"
+    source: build
+    build:
+      path: "{{ clawdbot_install_dir }}"
+    state: present
+
+- name: Start Clawdbot container with docker compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ clawdbot_install_dir }}"
+    state: present
+
+- name: Wait for Clawdbot container to be healthy
+  community.docker.docker_container_info:
+    name: "{{ clawdbot_container_name }}"
+  register: container_info
+  until: container_info.container.State.Status == 'running'
+  retries: 10
+  delay: 3
+
+- name: Generate systemd service file
+  template:
+    src: clawdbot.service.j2
+    dest: /etc/systemd/system/clawdbot.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Enable Clawdbot service
+  systemd:
+    name: clawdbot
+    enabled: yes

@@ -1,0 +1,17 @@
+[Unit]
+Description=Clawdbot Docker Container
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User={{ clawdbot_user }}
+Group={{ clawdbot_user }}
+WorkingDirectory={{ clawdbot_install_dir }}
+
+ExecStart=/usr/bin/docker compose -f {{ clawdbot_install_dir }}/docker-compose.yml up -d
+ExecStop=/usr/bin/docker compose -f {{ clawdbot_install_dir }}/docker-compose.yml down
+
+[Install]
+WantedBy=multi-user.target

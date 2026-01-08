@@ -1,0 +1,49 @@
+---
+- name: Add Tailscale GPG key
+  shell: |
+    curl -fsSL https://pkgs.tailscale.com/stable/{{ ansible_distribution | lower }}/{{ ansible_distribution_release }}.noarmor.gpg | tee /usr/share/keyrings/tailscale-archive-keyring.gpg > /dev/null
+  args:
+    creates: /usr/share/keyrings/tailscale-archive-keyring.gpg
+
+- name: Add Tailscale repository
+  shell: |
+    curl -fsSL https://pkgs.tailscale.com/stable/{{ ansible_distribution | lower }}/{{ ansible_distribution_release }}.tailscale-keyring.list | tee /etc/apt/sources.list.d/tailscale.list > /dev/null
+  args:
+    creates: /etc/apt/sources.list.d/tailscale.list
+
+- name: Update apt cache after adding Tailscale repo
+  apt:
+    update_cache: yes
+
+- name: Install Tailscale
+  apt:
+    name: tailscale
+    state: present
+
+- name: Check if Tailscale is already connected
+  command: tailscale status --json
+  register: tailscale_status
+  changed_when: false
+  failed_when: false
+
+- name: Display Tailscale auth URL if not connected
+  debug:
+    msg:
+      - "============================================"
+      - "Tailscale installed but not connected yet"
+      - "============================================"
+      - ""
+      - "To connect this machine to your Tailnet:"
+      - "Run: sudo tailscale up"
+      - ""
+      - "For unattended installation, use an auth key:"
+      - "sudo tailscale up --authkey tskey-auth-xxxxx"
+      - ""
+      - "Get auth key from: https://login.tailscale.com/admin/settings/keys"
+  when: tailscale_status.rc != 0
+
+- name: Enable Tailscale service
+  systemd:
+    name: tailscaled
+    enabled: yes
+    state: started

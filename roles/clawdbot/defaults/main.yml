@@ -1,0 +1,26 @@
+---
+# Clawdbot default variables
+
+# Tailscale settings
+tailscale_authkey: ""  # Optional: set to auto-connect during installation
+
+# Node.js version
+nodejs_version: "22.x"
+
+# Clawdbot installation directory
+clawdbot_install_dir: /opt/clawdbot
+
+# Clawdbot config directory
+clawdbot_config_dir: "{{ clawdbot_home }}/.clawdbot"
+
+# Docker image settings
+clawdbot_docker_image: clawdbot
+clawdbot_docker_tag: latest
+
+# Container settings
+clawdbot_container_name: clawdbot
+clawdbot_port: 3000
+
+# User settings (will be created as system user)
+clawdbot_user: clawdbot
+clawdbot_home: /home/clawdbot

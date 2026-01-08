@@ -1,0 +1,15 @@
+---
+- name: Create clawdbot system user
+  user:
+    name: clawdbot
+    comment: "Clawdbot Service User"
+    system: yes
+    shell: /bin/bash
+    create_home: yes
+    home: /home/clawdbot
+    state: present
+
+- name: Set clawdbot user as primary user for installation
+  set_fact:
+    clawdbot_user: clawdbot
+    clawdbot_home: /home/clawdbot

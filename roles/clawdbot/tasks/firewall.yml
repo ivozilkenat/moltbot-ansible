@@ -1,0 +1,79 @@
+---
+- name: Install UFW
+  apt:
+    name: ufw
+    state: present
+    update_cache: yes
+
+- name: Reset UFW to default state
+  community.general.ufw:
+    state: reset
+  ignore_errors: yes
+
+- name: Set UFW default policies
+  community.general.ufw:
+    direction: "{{ item.direction }}"
+    policy: "{{ item.policy }}"
+  loop:
+    - { direction: 'incoming', policy: 'deny' }
+    - { direction: 'outgoing', policy: 'allow' }
+    - { direction: 'routed', policy: 'deny' }
+
+- name: Allow SSH on port 22
+  community.general.ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+    comment: 'SSH'
+
+- name: Allow Tailscale UDP port 41641
+  community.general.ufw:
+    rule: allow
+    port: '41641'
+    proto: udp
+    comment: 'Tailscale'
+
+- name: Get default network interface
+  shell: ip route | grep default | awk '{print $5}' | head -n1
+  register: default_interface
+  changed_when: false
+
+- name: Create UFW after.rules for Docker isolation
+  blockinfile:
+    path: /etc/ufw/after.rules
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - Docker isolation"
+    insertbefore: "^# don't delete the 'COMMIT' line"
+    block: |
+      # Docker port isolation - block all forwarded traffic by default
+      *filter
+      :DOCKER-USER - [0:0]
+      
+      # Allow established connections
+      -A DOCKER-USER -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+      
+      # Allow localhost
+      -A DOCKER-USER -i lo -j ACCEPT
+      
+      # Block all other forwarded traffic to Docker containers from external interface
+      -A DOCKER-USER -i {{ default_interface.stdout }} -j DROP
+      
+      # Return to continue processing
+      COMMIT
+    create: no
+
+- name: Configure Docker daemon to work with UFW
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart docker
+
+- name: Enable UFW
+  community.general.ufw:
+    state: enabled
+
+- name: Reload UFW
+  community.general.ufw:
+    state: reloaded
