@@ -54,6 +54,9 @@
     executable: /bin/bash
   become: true
   become_user: "{{ clawdbot_user }}"
+  environment:
+    HOME: "{{ clawdbot_home }}"
+    USER: "{{ clawdbot_user }}"
 
 - name: Configure .zshrc for clawdbot user
   ansible.builtin.blockinfile:
