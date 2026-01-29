@@ -6,6 +6,9 @@
 
   vars:
     ansible_python_interpreter: /usr/bin/python3
+    # Import role defaults for use in post_tasks
+    clawdbot_user: "{{ clawdbot_user | default('clawdbot') }}"
+    clawdbot_home: "{{ clawdbot_home | default('/home/clawdbot') }}"
 
   environment:
     TERM: xterm-256color
@@ -14,9 +17,7 @@
   pre_tasks:
     - name: Enable color terminal for current session
       ansible.builtin.set_fact:
-        ansible_env:
-          TERM: xterm-256color
-          COLORTERM: truecolor
+        ansible_env: "{{ ansible_env | default({}) | combine({'TERM': 'xterm-256color', 'COLORTERM': 'truecolor'}) }}"
 
     - name: Detect operating system
       ansible.builtin.set_fact:
@@ -71,13 +72,35 @@
         path: "{{ '/opt/homebrew/bin/brew' if is_macos else '/home/linuxbrew/.linuxbrew/bin/brew' }}"
       register: homebrew_check
 
-    - name: Install Homebrew (macOS and Linux)
+    - name: Create linuxbrew user for Homebrew (Linux)
+      ansible.builtin.user:
+        name: linuxbrew
+        system: true
+        create_home: true
+        home: /home/linuxbrew
+      when: is_linux and not homebrew_check.stat.exists
+
+    - name: Install Homebrew (Linux)
       ansible.builtin.shell: |
         NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      become: true
+      become_user: linuxbrew
+      environment:
+        HOME: /home/linuxbrew
+        USER: linuxbrew
       args:
-        creates: "{{ '/opt/homebrew/bin/brew' if is_macos else '/home/linuxbrew/.linuxbrew/bin/brew' }}"
-      when: not homebrew_check.stat.exists
-      register: homebrew_install
+        creates: /home/linuxbrew/.linuxbrew/bin/brew
+      when: is_linux and not homebrew_check.stat.exists
+      register: homebrew_install_linux
+
+    - name: Install Homebrew (macOS)
+      ansible.builtin.shell: |
+        NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      become: false
+      args:
+        creates: /opt/homebrew/bin/brew
+      when: is_macos and not homebrew_check.stat.exists
+      register: homebrew_install_macos
 
     - name: Add Homebrew to PATH for current session (Linux)
       ansible.builtin.set_fact:
@@ -92,7 +115,7 @@
     - name: Display Homebrew installation status
       ansible.builtin.debug:
         msg: "✅ Homebrew installed successfully"
-      when: homebrew_install is defined and homebrew_install.changed
+      when: (homebrew_install_linux is defined and homebrew_install_linux.changed) or (homebrew_install_macos is defined and homebrew_install_macos.changed)
 
   roles:
     - clawdbot
@@ -110,9 +133,9 @@
 
     - name: Create one-time welcome message for clawdbot user
       ansible.builtin.copy:
-        dest: /home/clawdbot/.clawdbot-welcome
-        owner: clawdbot
-        group: clawdbot
+        dest: "{{ clawdbot_home }}/.clawdbot-welcome"
+        owner: "{{ clawdbot_user }}"
+        group: "{{ clawdbot_user }}"
         mode: '0644'
         content: |
           echo ""
@@ -188,10 +211,12 @@
 
     - name: Add welcome message to .bashrc
       ansible.builtin.lineinfile:
-        path: /home/clawdbot/.bashrc
+        path: "{{ clawdbot_home }}/.bashrc"
         line: '[ -f ~/.clawdbot-welcome ] && source ~/.clawdbot-welcome'
         state: present
         insertafter: EOF
+        owner: "{{ clawdbot_user }}"
+        group: "{{ clawdbot_user }}"
 
     - name: Notify that playbook is complete
       ansible.builtin.debug:

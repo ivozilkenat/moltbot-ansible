@@ -55,7 +55,8 @@
       eval "$(/opt/homebrew/bin/brew shellenv)"
 
       # Add pnpm to PATH
-      export PATH="{{ clawdbot_home }}/.local/bin:$PATH"
+      export PNPM_HOME="{{ clawdbot_home }}/.local/share/pnpm"
+      export PATH="{{ clawdbot_home }}/.local/bin:$PNPM_HOME:$PATH"
 
       # Color support for common tools
       export CLICOLOR=1
@@ -67,4 +68,5 @@
       alias ll='ls -lah'
     create: true
     owner: "{{ clawdbot_user }}"
+    group: "{{ clawdbot_user }}"
     mode: '0644'

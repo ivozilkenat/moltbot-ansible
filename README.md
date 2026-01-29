@@ -1,7 +1,7 @@
 # Clawdbot Ansible Installer
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Lint](https://github.com/pasogott/clawdbot-ansible/actions/workflows/lint.yml/badge.svg)](https://github.com/pasogott/clawdbot-ansible/actions/workflows/lint.yml)
+[![Lint](https://github.com/ivozilkenat/moltbot-ansible/actions/workflows/lint.yml/badge.svg)](https://github.com/ivozilkenat/moltbot-ansible/actions/workflows/lint.yml)
 [![Ansible](https://img.shields.io/badge/Ansible-2.14+-blue.svg)](https://www.ansible.com/)
 [![Multi-OS](https://img.shields.io/badge/OS-Debian%20%7C%20Ubuntu%20%7C%20macOS-orange.svg)](https://www.debian.org/)
 
@@ -25,7 +25,7 @@ Automated, hardened installation of [Clawdbot](https://github.com/clawdbot/clawd
 Install the latest stable version from npm:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/pasogott/clawdbot-ansible/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ivozilkenat/moltbot-ansible/main/install.sh | bash
 ```
 
 ### Development Mode
@@ -34,8 +34,8 @@ Install from source for development or testing:
 
 ```bash
 # Clone the installer
-git clone https://github.com/pasogott/clawdbot-ansible.git
-cd clawdbot-ansible
+git clone https://github.com/ivozilkenat/moltbot-ansible.git
+cd moltbot-ansible
 
 # Install in development mode
 ansible-playbook playbook.yml --ask-become-pass -e clawdbot_install_mode=development
@@ -120,6 +120,62 @@ Enable with: `-e clawdbot_install_mode=development`
 
 Verify: `nmap -p- YOUR_SERVER_IP` should show only port 22 open.
 
+## Reverse Proxy Configuration
+
+This installer configures Clawdbot to work behind a reverse proxy (like Traefik) by default.
+
+### Default Network Access
+
+The gateway is accessible from:
+- **Tailscale**: `100.64.0.24/32` (your Traefik proxy host)
+- **Local Network**: `192.168.1.0/24`
+
+### Gateway Settings
+
+By default, the gateway:
+- Binds to `0.0.0.0:3000` (all interfaces)
+- Trusts `X-Forwarded-*` headers from configured proxies
+- UFW allows port 3000 from trusted networks only
+
+### Customizing Network Access
+
+Override in your vars.yml or command line:
+
+```yaml
+# Custom trusted networks
+clawdbot_allowed_networks:
+  - { ip: "100.64.0.0/10", comment: "All Tailscale IPs" }
+  - { ip: "10.0.0.0/8", comment: "Private network" }
+
+# Custom trusted proxies for X-Forwarded headers
+clawdbot_trusted_proxies:
+  - "100.64.0.0/10"
+  - "10.0.0.0/8"
+
+# Bind to localhost only (if not using proxy)
+clawdbot_gateway_bind: "127.0.0.1"
+clawdbot_behind_proxy: false
+```
+
+### Traefik Example
+
+Example Traefik configuration for routing to Clawdbot:
+
+```yaml
+http:
+  routers:
+    clawdbot:
+      rule: "Host(`clawdbot.yourdomain.com`)"
+      service: clawdbot
+      tls:
+        certResolver: letsencrypt
+  services:
+    clawdbot:
+      loadBalancer:
+        servers:
+          - url: "http://clawdbot-host:3000"
+```
+
 ## Documentation
 
 - [Configuration Guide](docs/configuration.md) - All configuration options
@@ -171,8 +227,8 @@ Verify: `nmap -p- YOUR_SERVER_IP` should show only port 22 open.
 sudo apt update && sudo apt install -y ansible git
 
 # Clone repository
-git clone https://github.com/pasogott/clawdbot-ansible.git
-cd clawdbot-ansible
+git clone https://github.com/ivozilkenat/moltbot-ansible.git
+cd moltbot-ansible
 
 # Install Ansible collections
 ansible-galaxy collection install -r requirements.yml
@@ -282,4 +338,4 @@ MIT - see [LICENSE](LICENSE)
 ## Support
 
 - Clawdbot: https://github.com/clawdbot/clawdbot
-- This installer: https://github.com/pasogott/clawdbot-ansible/issues
+- This installer: https://github.com/ivozilkenat/moltbot-ansible/issues

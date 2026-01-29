@@ -22,7 +22,7 @@ This guide explains how to install Clawdbot in **development mode**, where the a
 
 ```bash
 # Clone the ansible installer
-git clone https://github.com/pasogott/clawdbot-ansible.git
+git clone https://github.com/ivozilkenat/moltbot-ansible.git
 cd clawdbot-ansible
 
 # Run in development mode
@@ -36,7 +36,7 @@ cd clawdbot-ansible
 sudo apt update && sudo apt install -y ansible git
 
 # Clone repository
-git clone https://github.com/pasogott/clawdbot-ansible.git
+git clone https://github.com/ivozilkenat/moltbot-ansible.git
 cd clawdbot-ansible
 
 # Install collections

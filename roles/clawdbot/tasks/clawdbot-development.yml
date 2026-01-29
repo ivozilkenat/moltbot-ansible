@@ -138,3 +138,15 @@
     owner: "{{ clawdbot_user }}"
     group: "{{ clawdbot_user }}"
     mode: '0644'
+
+- name: Ensure development directories have correct ownership
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ clawdbot_user }}"
+    group: "{{ clawdbot_user }}"
+    recurse: true
+  loop:
+    - "{{ clawdbot_home }}/.local"
+    - "{{ clawdbot_home }}/.clawdbot"
+    - "{{ clawdbot_code_dir }}"

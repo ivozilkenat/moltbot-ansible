@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Configurable user name (default: clawdbot)
+CLAWDBOT_USER="${CLAWDBOT_USER:-clawdbot}"
+
 # Run the Ansible playbook
 if [ "$EUID" -eq 0 ]; then
     ansible-playbook playbook.yml -e ansible_become=false "$@"
@@ -19,11 +22,11 @@ if [ $PLAYBOOK_EXIT -eq 0 ]; then
     echo ""
     echo "🔄 SWITCH TO CLAWDBOT USER with:"
     echo ""
-    echo "    sudo su - clawdbot"
+    echo "    sudo su - ${CLAWDBOT_USER}"
     echo ""
     echo "  OR (alternative):"
     echo ""
-    echo "    sudo -u clawdbot -i"
+    echo "    sudo -u ${CLAWDBOT_USER} -i"
     echo ""
     echo "This will switch you to the clawdbot user with a proper"
     echo "login shell (loads .bashrc, sets environment correctly)."

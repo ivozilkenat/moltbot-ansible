@@ -1,33 +1,33 @@
 ---
 - name: Create clawdbot system user
   ansible.builtin.user:
-    name: clawdbot
+    name: "{{ clawdbot_user }}"
     comment: "Clawdbot Service User"
     system: true
     shell: /bin/bash
     create_home: true
-    home: /home/clawdbot
+    home: "{{ clawdbot_home }}"
     state: present
 
 - name: Add clawdbot user to sudoers with NOPASSWD
   ansible.builtin.copy:
-    dest: /etc/sudoers.d/clawdbot
+    dest: /etc/sudoers.d/{{ clawdbot_user }}
     mode: '0440'
     owner: root
     group: root
     content: |
-      # Allow clawdbot user to run sudo without password
-      clawdbot ALL=(ALL) NOPASSWD: ALL
+      # Allow {{ clawdbot_user }} user to run sudo without password
+      {{ clawdbot_user }} ALL=(ALL) NOPASSWD: ALL
     validate: /usr/sbin/visudo -cf %s
 
 - name: Set clawdbot user as primary user for installation
   ansible.builtin.set_fact:
-    clawdbot_user: clawdbot
-    clawdbot_home: /home/clawdbot
+    clawdbot_user: "{{ clawdbot_user }}"
+    clawdbot_home: "{{ clawdbot_home }}"
 
 # Fix DBus issues for systemd user services
 - name: Get clawdbot user ID
-  ansible.builtin.command: id -u clawdbot
+  ansible.builtin.command: id -u {{ clawdbot_user }}
   register: clawdbot_uid
   changed_when: false
   when: ansible_os_family == 'Debian'
@@ -38,7 +38,7 @@
   when: ansible_os_family == 'Debian'
 
 - name: Enable lingering for clawdbot user (allows systemd user services without login)
-  ansible.builtin.command: loginctl enable-linger clawdbot
+  ansible.builtin.command: loginctl enable-linger {{ clawdbot_user }}
   changed_when: false
   when: ansible_os_family == 'Debian'
 
@@ -46,8 +46,8 @@
   ansible.builtin.file:
     path: "/run/user/{{ clawdbot_uid.stdout }}"
     state: directory
-    owner: clawdbot
-    group: clawdbot
+    owner: "{{ clawdbot_user }}"
+    group: "{{ clawdbot_user }}"
     mode: '0700'
   when: ansible_os_family == 'Debian'
 
@@ -61,13 +61,13 @@
   ansible.builtin.file:
     path: "{{ clawdbot_home }}/.ssh"
     state: directory
-    owner: clawdbot
-    group: clawdbot
+    owner: "{{ clawdbot_user }}"
+    group: "{{ clawdbot_user }}"
     mode: '0700'
 
 - name: Add SSH authorized keys for clawdbot user
   ansible.builtin.authorized_key:
-    user: clawdbot
+    user: "{{ clawdbot_user }}"
     state: present
     key: "{{ item }}"
   loop: "{{ clawdbot_ssh_keys }}"
@@ -85,18 +85,18 @@
 
 - name: Set XDG_RUNTIME_DIR in .bashrc for clawdbot user
   ansible.builtin.lineinfile:
-    path: /home/clawdbot/.bashrc
+    path: "{{ clawdbot_home }}/.bashrc"
     line: 'export XDG_RUNTIME_DIR=/run/user/$(id -u)'
     state: present
     create: true
-    owner: clawdbot
-    group: clawdbot
+    owner: "{{ clawdbot_user }}"
+    group: "{{ clawdbot_user }}"
     mode: '0644'
   when: ansible_os_family == 'Debian'
 
 - name: Set DBUS_SESSION_BUS_ADDRESS in .bashrc for clawdbot user
   ansible.builtin.blockinfile:
-    path: /home/clawdbot/.bashrc
+    path: "{{ clawdbot_home }}/.bashrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK - DBus config"
     block: |
       # DBus session bus configuration
@@ -106,7 +106,7 @@
         fi
       fi
     create: true
-    owner: clawdbot
-    group: clawdbot
+    owner: "{{ clawdbot_user }}"
+    group: "{{ clawdbot_user }}"
     mode: '0644'
   when: ansible_os_family == 'Debian'

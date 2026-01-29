@@ -12,7 +12,10 @@ if [ -z "$COLORTERM" ]; then
     export COLORTERM=truecolor
 fi
 
-REPO_URL="https://raw.githubusercontent.com/pasogott/clawdbot-ansible/main"
+REPO_OWNER="${REPO_OWNER:-ivozilkenat}"
+REPO_NAME="${REPO_NAME:-moltbot-ansible}"
+REPO_BRANCH="${REPO_BRANCH:-main}"
+REPO_URL="https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}"
 PLAYBOOK_URL="${REPO_URL}/playbook.yml"
 TEMP_DIR=$(mktemp -d)
 
@@ -76,8 +79,8 @@ cd "$TEMP_DIR"
 
 # For simplicity, we'll clone the entire repo
 echo "Cloning repository..."
-git clone https://github.com/pasogott/clawdbot-ansible.git
-cd clawdbot-ansible
+git clone "https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
+cd "${REPO_NAME}"
 
 echo -e "${GREEN}✓ Playbook downloaded${NC}"
 

@@ -8,7 +8,7 @@ description: Detailed installation and configuration instructions
 ## Quick Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/pasogott/clawdbot-ansible/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ivozilkenat/moltbot-ansible/main/install.sh | bash
 ```
 
 ## Manual Installation
@@ -23,7 +23,7 @@ sudo apt install -y ansible git
 ### Clone and Run
 
 ```bash
-git clone https://github.com/pasogott/clawdbot-ansible.git
+git clone https://github.com/ivozilkenat/moltbot-ansible.git
 cd clawdbot-ansible
 
 # Install Ansible collections

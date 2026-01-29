@@ -153,7 +153,7 @@ clawdbot onboard --install-daemon # ✅ One command setup!
 #### New Workflow - Development Mode
 ```bash
 # Installation with development mode
-git clone https://github.com/pasogott/clawdbot-ansible.git
+git clone https://github.com/ivozilkenat/moltbot-ansible.git
 cd clawdbot-ansible
 ./run-playbook.sh -e clawdbot_install_mode=development
 

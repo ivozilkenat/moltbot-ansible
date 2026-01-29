@@ -10,6 +10,23 @@ nodejs_version: "22.x"
 # Clawdbot settings
 clawdbot_port: 3000
 
+# Gateway and Reverse Proxy Settings
+# Bind address: "0.0.0.0" for all interfaces, "127.0.0.1" for localhost only
+clawdbot_gateway_bind: "0.0.0.0"
+
+# Enable reverse proxy mode (trust X-Forwarded-* headers)
+clawdbot_behind_proxy: true
+
+# Trusted proxy IP addresses and networks
+clawdbot_trusted_proxies:
+  - "100.64.0.24/32"   # Tailscale proxy host
+  - "192.168.1.0/24"   # Local network
+
+# Networks allowed to access the gateway via UFW
+clawdbot_allowed_networks:
+  - { ip: "100.64.0.24/32", comment: "Tailscale proxy host" }
+  - { ip: "192.168.1.0/24", comment: "Local network" }
+
 # Clawdbot config directory
 clawdbot_config_dir: "{{ clawdbot_home }}/.clawdbot"
 
