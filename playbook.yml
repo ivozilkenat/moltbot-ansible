@@ -80,11 +80,23 @@
         home: /home/linuxbrew
       when: is_linux and not homebrew_check.stat.exists
 
+    - name: Add linuxbrew user to sudoers for Homebrew install (Linux)
+      ansible.builtin.copy:
+        dest: /etc/sudoers.d/linuxbrew
+        mode: '0440'
+        owner: root
+        group: root
+        content: |
+          linuxbrew ALL=(ALL) NOPASSWD: ALL
+        validate: /usr/sbin/visudo -cf %s
+      when: is_linux and not homebrew_check.stat.exists
+
     - name: Install Homebrew (Linux)
       ansible.builtin.shell: |
         NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
       become: true
       become_user: linuxbrew
+      become_method: su
       environment:
         HOME: /home/linuxbrew
         USER: linuxbrew
