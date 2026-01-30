@@ -33,7 +33,7 @@
 - name: Allow Clawdbot gateway from trusted networks
   community.general.ufw:
     rule: allow
-    port: "{{ clawdbot_port }}"
+    port: "{{ clawdbot_gateway_port }}"
     proto: tcp
     from_ip: "{{ item.ip }}"
     comment: "Clawdbot gateway - {{ item.comment }}"

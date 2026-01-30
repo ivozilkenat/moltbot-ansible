@@ -20,9 +20,46 @@ Automated, hardened installation of [Clawdbot](https://github.com/clawdbot/clawd
 
 ## Quick Start
 
-### Release Mode (Recommended)
+### Automated Install (Recommended)
 
-Install the latest stable version from npm:
+One-liner install with Tailscale auto-connect:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ivozilkenat/moltbot-ansible/main/install.sh | bash -s -- \
+  --ts-authkey YOUR_TAILSCALE_AUTHKEY \
+  --ts-hostname YOUR_HOSTNAME
+```
+
+This will:
+- Install all dependencies (Docker, Node.js, pnpm, etc.)
+- Connect to Tailscale (using Headscale at vpn.ivo-zilkenat.de)
+- Configure and start the Clawdbot gateway on port 18789
+
+### Parameters
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `--ts-authkey` | (optional) | Tailscale auth key - if not provided, Tailscale is installed but not connected |
+| `--ts-hostname` | (optional) | Hostname for this machine in Tailnet |
+| `--ts-login-server` | `https://vpn.ivo-zilkenat.de` | Custom login server URL |
+| `--gateway-bind` | `lan` | Gateway bind mode: `lan`, `loopback`, `tailnet` |
+| `--gateway-token` | (auto-generated) | Specific gateway token |
+
+**Note:** If `--ts-authkey` is not provided, Tailscale will be installed but you must connect manually with:
+```bash
+sudo tailscale up --login-server https://vpn.ivo-zilkenat.de
+```
+
+### After Installation
+
+```bash
+sudo su - clawdbot
+clawdbot onboard --no-install-daemon
+```
+
+### Basic Install (No Tailscale)
+
+Install the latest stable version from npm without Tailscale auto-connect:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ivozilkenat/moltbot-ansible/main/install.sh | sudo bash

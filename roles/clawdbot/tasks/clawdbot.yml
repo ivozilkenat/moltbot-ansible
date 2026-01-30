@@ -31,6 +31,77 @@
   ansible.builtin.include_tasks: clawdbot-development.yml
   when: clawdbot_install_mode == "development"
 
+- name: Deploy zshrc for clawdbot user
+  ansible.builtin.template:
+    src: zshrc-clawdbot.j2
+    dest: "{{ clawdbot_home }}/.zshrc"
+    owner: "{{ clawdbot_user }}"
+    group: "{{ clawdbot_user }}"
+    mode: '0644'
+
+- name: Generate gateway token if not set
+  ansible.builtin.set_fact:
+    clawdbot_gateway_token: "{{ lookup('community.general.random_string', length=64, base64=false, special=false) }}"
+  when: clawdbot_gateway_token | length == 0
+
+- name: Initialize clawdbot config
+  ansible.builtin.shell:
+    cmd: "{{ clawdbot_bin }} setup --non-interactive"
+  become: true
+  become_user: "{{ clawdbot_user }}"
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ clawdbot_uid_value }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ clawdbot_uid_value }}/bus"
+  args:
+    creates: "{{ clawdbot_config_dir }}/clawdbot.json"
+
+- name: Install clawdbot gateway service
+  ansible.builtin.shell:
+    cmd: "{{ clawdbot_bin }} gateway install --force"
+  become: true
+  become_user: "{{ clawdbot_user }}"
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ clawdbot_uid_value }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ clawdbot_uid_value }}/bus"
+
+- name: Configure gateway settings
+  ansible.builtin.shell:
+    cmd: |
+      {{ clawdbot_bin }} config set gateway.mode {{ clawdbot_gateway_mode }}
+      {{ clawdbot_bin }} config set gateway.bind {{ clawdbot_gateway_bind }}
+      {{ clawdbot_bin }} config set gateway.auth.token "{{ clawdbot_gateway_token }}"
+  become: true
+  become_user: "{{ clawdbot_user }}"
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ clawdbot_uid_value }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ clawdbot_uid_value }}/bus"
+
+- name: Create trusted proxies config script
+  ansible.builtin.copy:
+    dest: /tmp/set_proxies.sh
+    content: |
+      {{ clawdbot_bin }} config set --json gateway.trustedProxies '{{ clawdbot_trusted_proxies | to_json }}'
+    mode: '0755'
+
+- name: Set trusted proxies
+  ansible.builtin.shell:
+    cmd: bash /tmp/set_proxies.sh
+  become: true
+  become_user: "{{ clawdbot_user }}"
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ clawdbot_uid_value }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ clawdbot_uid_value }}/bus"
+
+- name: Restart clawdbot gateway
+  ansible.builtin.shell:
+    cmd: "{{ clawdbot_bin }} gateway restart"
+  become: true
+  become_user: "{{ clawdbot_user }}"
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ clawdbot_uid_value }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ clawdbot_uid_value }}/bus"
+  when: clawdbot_start_daemon | bool
+
 - name: Configure .bashrc for clawdbot user
   ansible.builtin.blockinfile:
     path: "{{ clawdbot_home }}/.bashrc"
@@ -57,18 +128,19 @@
       ░███░░░█████░░███░░█████████░░████░░░█░░░░█░
                     FRESH DAILY
       
-      Moltbot is installed!
+      Clawdbot is installed and configured!
       
-      To complete setup, log in as the moltbot user and run the wizard:
+      Gateway is running on port {{ clawdbot_gateway_port }}.
+      
+      To complete setup, log in as the clawdbot user and run the wizard:
       
         sudo -i -u {{ clawdbot_user }}
-        moltbot onboard --install-daemon
+        clawdbot onboard --no-install-daemon
       
       The wizard will walk you through:
-        - Gateway configuration
         - Workspace setup
         - Channel connections (WhatsApp, Telegram, Discord, etc.)
         - Skills configuration
       
-      Docs: https://docs.molt.bot
-      GitHub: https://github.com/moltbot/moltbot
+      Docs: https://docs.clawd.bot
+      GitHub: https://github.com/clawdbot/clawdbot

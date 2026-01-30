@@ -38,24 +38,18 @@
     enabled: true
     state: started
 
-- name: Check if Tailscale is already connected (Linux)
-  ansible.builtin.command: tailscale status --json
-  register: tailscale_status_linux
-  changed_when: false
-  failed_when: false
+- name: Connect Tailscale with auth key
+  ansible.builtin.shell:
+    cmd: |
+      tailscale up --authkey {{ tailscale_authkey }} \
+        {{ '--hostname ' + tailscale_hostname if tailscale_hostname else '' }} \
+        {{ '--login-server ' + tailscale_login_server if tailscale_login_server else '' }}
+    executable: /bin/bash
+  when: tailscale_authkey | length > 0
 
-- name: Display Tailscale auth URL if not connected (Linux)
+- name: Display Tailscale manual connection instructions
   ansible.builtin.debug:
     msg:
-      - "============================================"
-      - "Tailscale installed but not connected yet"
-      - "============================================"
-      - ""
-      - "To connect this machine to your Tailnet:"
-      - "Run: sudo tailscale up"
-      - ""
-      - "For unattended installation, use an auth key:"
-      - "sudo tailscale up --authkey tskey-auth-xxxxx"
-      - ""
-      - "Get auth key from: https://login.tailscale.com/admin/settings/keys"
-  when: tailscale_status_linux.rc != 0
+      - "Tailscale installed but not connected (no authkey provided)"
+      - "To connect manually: sudo tailscale up --login-server {{ tailscale_login_server }}"
+  when: tailscale_authkey | length == 0

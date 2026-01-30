@@ -2,7 +2,10 @@
 # Clawdbot default variables
 
 # Tailscale settings
-tailscale_authkey: ""  # Optional: set to auto-connect during installation
+tailscale_authkey: ""                              # Optional: set to auto-connect during installation
+tailscale_hostname: ""                             # Custom hostname (optional)
+tailscale_login_server: "https://vpn.ivo-zilkenat.de"  # Headscale server (default)
+tailscale_accept_dns: true                         # Accept Tailscale DNS
 
 # Node.js version
 nodejs_version: "22.x"
@@ -13,6 +16,9 @@ clawdbot_port: 3000
 
 # Gateway port (official default: 18789)
 clawdbot_gateway_port: 18789
+
+# Gateway mode (must be "local" for gateway to start)
+clawdbot_gateway_mode: "local"
 
 # Gateway authentication token (auto-generated if empty)
 # Set this to a specific value for reproducibility across deployments
@@ -27,6 +33,9 @@ clawdbot_start_daemon: true
 # Gateway and Reverse Proxy Settings
 # Bind mode: "lan" (0.0.0.0), "loopback" (127.0.0.1), "tailnet" (Tailscale IP), "auto"
 clawdbot_gateway_bind: "lan"
+
+# Clawdbot binary path (pnpm global install location)
+clawdbot_bin: "{{ clawdbot_home }}/.local/share/pnpm/clawdbot"
 
 # Enable reverse proxy mode (trust X-Forwarded-* headers)
 clawdbot_behind_proxy: true

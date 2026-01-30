@@ -87,6 +87,60 @@ echo -e "${GREEN}✓ Playbook downloaded${NC}"
 echo -e "${GREEN}[3/5] Installing Ansible collections...${NC}"
 ansible-galaxy collection install -r requirements.yml
 
+# Parse command line arguments
+TS_AUTHKEY=""
+TS_HOSTNAME=""
+TS_LOGIN_SERVER=""
+GATEWAY_TOKEN=""
+GATEWAY_BIND=""
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --ts-authkey)
+            TS_AUTHKEY="$2"
+            shift 2
+            ;;
+        --ts-hostname)
+            TS_HOSTNAME="$2"
+            shift 2
+            ;;
+        --ts-login-server)
+            TS_LOGIN_SERVER="$2"
+            shift 2
+            ;;
+        --gateway-token)
+            GATEWAY_TOKEN="$2"
+            shift 2
+            ;;
+        --gateway-bind)
+            GATEWAY_BIND="$2"
+            shift 2
+            ;;
+        *)
+            echo -e "${RED}Unknown option: $1${NC}"
+            echo "Usage: $0 [--ts-authkey KEY] [--ts-hostname NAME] [--ts-login-server URL] [--gateway-token TOKEN] [--gateway-bind MODE]"
+            exit 1
+            ;;
+    esac
+done
+
+# Build extra vars for Ansible
+if [ -n "$TS_AUTHKEY" ]; then
+    ANSIBLE_EXTRA_VARS="$ANSIBLE_EXTRA_VARS -e tailscale_authkey=$TS_AUTHKEY"
+fi
+if [ -n "$TS_HOSTNAME" ]; then
+    ANSIBLE_EXTRA_VARS="$ANSIBLE_EXTRA_VARS -e tailscale_hostname=$TS_HOSTNAME"
+fi
+if [ -n "$TS_LOGIN_SERVER" ]; then
+    ANSIBLE_EXTRA_VARS="$ANSIBLE_EXTRA_VARS -e tailscale_login_server=$TS_LOGIN_SERVER"
+fi
+if [ -n "$GATEWAY_TOKEN" ]; then
+    ANSIBLE_EXTRA_VARS="$ANSIBLE_EXTRA_VARS -e clawdbot_gateway_token=$GATEWAY_TOKEN"
+fi
+if [ -n "$GATEWAY_BIND" ]; then
+    ANSIBLE_EXTRA_VARS="$ANSIBLE_EXTRA_VARS -e clawdbot_gateway_bind=$GATEWAY_BIND"
+fi
+
 echo -e "${GREEN}[4/5] Running Ansible playbook...${NC}"
 if [ "$EUID" -ne 0 ]; then
     echo -e "${YELLOW}You will be prompted for your sudo password.${NC}"

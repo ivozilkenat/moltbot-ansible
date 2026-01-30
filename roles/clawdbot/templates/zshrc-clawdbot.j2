@@ -46,14 +46,17 @@ _show_clawdbot_info() {
   echo ""
   echo "  Dashboard URL: http://$(hostname -I | awk '{print $1}'):{{ clawdbot_gateway_port }}/"
   echo ""
-  echo "  Auth Token (paste in dashboard settings):"
-  echo "    {{ clawdbot_gateway_token }}"
+{% if clawdbot_gateway_token %}
+  echo "  Auth Token: {{ clawdbot_gateway_token }}"
+{% else %}
+  echo "  Auth Token: Run 'clawdbot config get gateway.auth.token' to retrieve"
+{% endif %}
   echo ""
   echo "  Quick Commands:"
-  echo "    clawdbot gateway status     # Check gateway status"
-  echo "    clawdbot providers login    # Connect messaging provider"
-  echo "    clawdbot config set <k> <v> # Change settings"
-  echo "    clawdbot security audit     # Security check"
+  echo "    clawdbot gateway status          # Check gateway status"
+  echo "    clawdbot onboard --no-install-daemon  # Complete setup wizard"
+  echo "    clawdbot channels login          # Connect messaging provider"
+  echo "    clawdbot config set <k> <v>      # Change settings"
   echo ""
 }
 
