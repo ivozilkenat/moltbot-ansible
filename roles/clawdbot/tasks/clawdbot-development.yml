@@ -148,5 +148,12 @@
     recurse: true
   loop:
     - "{{ clawdbot_home }}/.local"
-    - "{{ clawdbot_home }}/.clawdbot"
     - "{{ clawdbot_code_dir }}"
+
+- name: Ensure clawdbot config directory has correct ownership and permissions
+  ansible.builtin.file:
+    path: "{{ clawdbot_home }}/.clawdbot"
+    state: directory
+    owner: "{{ clawdbot_user }}"
+    group: "{{ clawdbot_user }}"
+    mode: '0700'
