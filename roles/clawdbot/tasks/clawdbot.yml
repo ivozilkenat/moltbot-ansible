@@ -1,61 +1,5 @@
 ---
-- name: Create Clawdbot directories (structure only, no config files)
-  ansible.builtin.file:
-    path: "{{ item.path }}"
-    state: directory
-    owner: "{{ clawdbot_user }}"
-    group: "{{ clawdbot_user }}"
-    mode: "{{ item.mode }}"
-  loop:
-    - { path: "{{ clawdbot_config_dir }}", mode: '0700' }
-    - { path: "{{ clawdbot_config_dir }}/sessions", mode: '0755' }
-    - { path: "{{ clawdbot_config_dir }}/credentials", mode: '0700' }
-    - { path: "{{ clawdbot_config_dir }}/data", mode: '0755' }
-    - { path: "{{ clawdbot_config_dir }}/logs", mode: '0755' }
-
-# Create workspace directory for agents
-- name: Create clawdbot workspace directory
-  ansible.builtin.file:
-    path: "{{ clawdbot_home }}/clawd"
-    state: directory
-    owner: "{{ clawdbot_user }}"
-    group: "{{ clawdbot_user }}"
-    mode: '0755'
-
-# Generate gateway token if not provided
-- name: Generate gateway token if not set
-  ansible.builtin.set_fact:
-    clawdbot_gateway_token: "{{ lookup('password', '/dev/null chars=ascii_lowercase,digits length=48') }}"
-  when: clawdbot_gateway_token == ""
-  no_log: true
-
-# Backup existing config if present and force_config is true
-- name: Check if clawdbot.json already exists
-  ansible.builtin.stat:
-    path: "{{ clawdbot_config_dir }}/clawdbot.json"
-  register: existing_config
-
-- name: Backup existing clawdbot.json (with timestamp)
-  ansible.builtin.copy:
-    src: "{{ clawdbot_config_dir }}/clawdbot.json"
-    dest: "{{ clawdbot_config_dir }}/clawdbot.json.backup.{{ ansible_date_time.iso8601_basic_short }}"
-    remote_src: true
-    owner: "{{ clawdbot_user }}"
-    group: "{{ clawdbot_user }}"
-    mode: '0600'
-  when: existing_config.stat.exists and clawdbot_force_config
-
-# Deploy clawdbot.json configuration
-- name: Deploy clawdbot.json configuration
-  ansible.builtin.template:
-    src: clawdbot-config.json.j2
-    dest: "{{ clawdbot_config_dir }}/clawdbot.json"
-    owner: "{{ clawdbot_user }}"
-    group: "{{ clawdbot_user }}"
-    mode: '0600'
-  when: not existing_config.stat.exists or clawdbot_force_config
-  # Note: Service restart handled manually after gateway installation
-
+# Create pnpm directories
 - name: Create pnpm directories
   ansible.builtin.file:
     path: "{{ item }}"
@@ -68,15 +12,6 @@
     - "{{ clawdbot_home }}/.local/share/pnpm/store"
     - "{{ clawdbot_home }}/.local/bin"
 
-- name: Ensure pnpm directories have correct ownership
-  ansible.builtin.file:
-    path: "{{ clawdbot_home }}/.local/share/pnpm"
-    state: directory
-    owner: "{{ clawdbot_user }}"
-    group: "{{ clawdbot_user }}"
-    recurse: true
-    mode: '0755'
-
 - name: Configure pnpm for clawdbot user
   ansible.builtin.shell:
     cmd: |
@@ -87,10 +22,6 @@
   become_user: "{{ clawdbot_user }}"
   changed_when: true  # Always consider changed as pnpm config may update
 
-- name: Display installation mode
-  ansible.builtin.debug:
-    msg: "📦 Installation mode: {{ clawdbot_install_mode }}"
-
 # Include appropriate installation method based on mode
 - name: Include release installation (pnpm install -g)
   ansible.builtin.include_tasks: clawdbot-release.yml
@@ -100,10 +31,10 @@
   ansible.builtin.include_tasks: clawdbot-development.yml
   when: clawdbot_install_mode == "development"
 
-- name: Configure .bashrc for clawdbot user (base config)
+- name: Configure .bashrc for clawdbot user
   ansible.builtin.blockinfile:
     path: "{{ clawdbot_home }}/.bashrc"
-    marker: "# {mark} ANSIBLE MANAGED BLOCK - Clawdbot pnpm"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - Moltbot pnpm"
     block: |
       # pnpm configuration
       export PNPM_HOME="{{ clawdbot_home }}/.local/share/pnpm"
@@ -114,47 +45,30 @@
     mode: '0644'
     insertafter: EOF
 
-# Note: Gateway service installation requires an interactive session.
-# The clawdbot CLI needs D-Bus which isn't available via Ansible become_user.
-# See: https://docs.clawd.bot/install/ansible for official deployment approach.
-- name: Display post-install instructions
+# Display Moltbot-style greeting with wizard instructions
+- name: Display Moltbot installation complete message
   ansible.builtin.debug:
     msg: |
-      ✅ Clawdbot is installed!
-
-      ╔════════════════════════════════════════════════════════╗
-      ║         Post-Install Setup Required                    ║
-      ╚════════════════════════════════════════════════════════╝
-
-      To complete setup, log in as the moltbot user and install the gateway service:
-
-      1. Log in as moltbot user:
-         sudo -i -u {{ clawdbot_user }}
-
-      2. Install and start the gateway service:
-         moltbot doctor --repair
-         # or
-         moltbot gateway install
-         moltbot gateway start
-
-      3. Access dashboard at:
-         http://<server-ip>:{{ clawdbot_gateway_port }}/
-
-      Auth Token (paste in dashboard settings):
-        {{ clawdbot_gateway_token }}
-
-      Next Steps:
-      1. Complete gateway installation (see above)
-      2. Open the dashboard URL in your browser
-      3. Paste the auth token in settings
-      4. Connect a messaging provider (WhatsApp, Telegram, etc.)
-      5. Configure AI model API keys
-
-      Quick Commands (as {{ clawdbot_user }} user):
-        moltbot gateway status     # Check gateway status
-        moltbot providers login    # Connect messaging provider
-        moltbot config set <k> <v> # Change settings
-        moltbot security audit     # Security check
-
-      Note: Gateway service installation requires D-Bus access which is only
-      available in interactive login sessions, not via Ansible become_user.
+      
+      ░███░░░░█░░░░░███░░█░░░░████░░████░░███░░▀█▀
+      █░░░█░░█░░░░░█░░░█░█░░░░█░░░█░█░░░█░░█░░░░█░
+      █░░░█░░█░░░░░█░░░█░█░░░░████░░█░░░█░░█░░░░█░
+      █░░░█░░█░░░░░█░░░█░█░░░░█░░░█░█░░░█░░█░░░░█░
+      ░███░░░█████░░███░░█████████░░████░░░█░░░░█░
+                    FRESH DAILY
+      
+      Moltbot is installed!
+      
+      To complete setup, log in as the moltbot user and run the wizard:
+      
+        sudo -i -u {{ clawdbot_user }}
+        moltbot onboard --install-daemon
+      
+      The wizard will walk you through:
+        - Gateway configuration
+        - Workspace setup
+        - Channel connections (WhatsApp, Telegram, Discord, etc.)
+        - Skills configuration
+      
+      Docs: https://docs.molt.bot
+      GitHub: https://github.com/moltbot/moltbot
