@@ -96,14 +96,13 @@
       when: is_linux and not homebrew_check.stat.exists
       register: homebrew_install_linux
 
-    - name: Make Linuxbrew accessible to all users (Linux)
+    - name: Make Linuxbrew home directory accessible (Linux)
       ansible.builtin.file:
-        path: /home/linuxbrew/.linuxbrew
+        path: /home/linuxbrew
         mode: '0755'
-        recurse: false
       when: is_linux
 
-    - name: Make Linuxbrew bin directory accessible (Linux)
+    - name: Make Linuxbrew installation accessible to all users (Linux)
       ansible.builtin.shell: |
         chmod -R o+rX /home/linuxbrew/.linuxbrew
       when: is_linux
