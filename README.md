@@ -25,7 +25,7 @@ Automated, hardened installation of [Clawdbot](https://github.com/clawdbot/clawd
 Install the latest stable version from npm:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ivozilkenat/moltbot-ansible/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ivozilkenat/moltbot-ansible/main/install.sh | sudo bash
 ```
 
 ### Development Mode
@@ -52,42 +52,52 @@ ansible-playbook playbook.yml --ask-become-pass -e clawdbot_install_mode=develop
 
 ## Post-Install
 
-After installation completes, switch to the clawdbot user:
+After installation completes, the gateway is **automatically configured and running**.
+
+The playbook:
+- Deploys the config to `~/.clawdbot/clawdbot.json`
+- Installs and starts the gateway daemon
+- Generates an auth token (shown in the playbook output)
+
+Switch to the clawdbot user to see the dashboard URL and token:
 
 ```bash
 sudo su - clawdbot
 ```
 
-Then run the quick-start onboarding wizard:
+The dashboard URL and auth token are displayed on login.
+
+### Next Steps
+
+1. **Open the dashboard** in your browser (URL shown on login)
+2. **Paste the auth token** in dashboard settings
+3. **Connect a messaging provider**:
 
 ```bash
-clawdbot onboard --install-daemon
-```
-
-This will:
-- Guide you through the setup wizard
-- Configure your messaging provider (WhatsApp/Telegram/Signal)
-- Install and start the daemon service
-
-### Alternative Manual Setup
-
-```bash
-# Configure manually
-clawdbot configure
-
-# Login to provider
+# Login to WhatsApp/Telegram/Signal
 clawdbot providers login
-
-# Test gateway
-clawdbot gateway
-
-# Install as daemon
-clawdbot daemon install
-clawdbot daemon start
 
 # Check status
 clawdbot status
 clawdbot logs
+```
+
+### Manual Setup (Alternative)
+
+If you prefer manual configuration or need to reconfigure:
+
+```bash
+# Interactive wizard (overwrites existing config)
+clawdbot onboard --install-daemon
+
+# Or configure manually
+clawdbot configure
+
+# Manage gateway service
+clawdbot gateway install
+clawdbot gateway start
+clawdbot gateway restart
+clawdbot gateway stop
 ```
 
 ## Installation Modes

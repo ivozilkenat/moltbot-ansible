@@ -36,3 +36,28 @@ alias ls='ls --color=auto'
 {% endif %}
 alias grep='grep --color=auto'
 alias ll='ls -lah'
+
+# Clawdbot dashboard info (shown on login)
+_show_clawdbot_info() {
+  echo ""
+  echo "╔════════════════════════════════════════════════════════╗"
+  echo "║         Clawdbot Dashboard                             ║"
+  echo "╚════════════════════════════════════════════════════════╝"
+  echo ""
+  echo "  Dashboard URL: http://{{ clawdbot_gateway_bind }}:{{ clawdbot_gateway_port }}/"
+  echo ""
+  echo "  Auth Token (paste in dashboard settings):"
+  echo "    {{ clawdbot_gateway_token }}"
+  echo ""
+  echo "  Quick Commands:"
+  echo "    clawdbot gateway status     # Check gateway status"
+  echo "    clawdbot providers login    # Connect messaging provider"
+  echo "    clawdbot config set <k> <v> # Change settings"
+  echo "    clawdbot security audit     # Security check"
+  echo ""
+}
+
+# Show dashboard info on interactive login
+if [[ -o interactive ]]; then
+  _show_clawdbot_info
+fi

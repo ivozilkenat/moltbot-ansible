@@ -8,7 +8,21 @@ tailscale_authkey: ""  # Optional: set to auto-connect during installation
 nodejs_version: "22.x"
 
 # Clawdbot settings
+# Legacy port variable (use clawdbot_gateway_port for gateway)
 clawdbot_port: 3000
+
+# Gateway port (official default: 18789)
+clawdbot_gateway_port: 18789
+
+# Gateway authentication token (auto-generated if empty)
+# Set this to a specific value for reproducibility across deployments
+clawdbot_gateway_token: ""
+
+# Force redeploy config (overwrites existing, backup is still created)
+clawdbot_force_config: false
+
+# Auto-start gateway daemon after installation
+clawdbot_start_daemon: true
 
 # Gateway and Reverse Proxy Settings
 # Bind address: "0.0.0.0" for all interfaces, "127.0.0.1" for localhost only

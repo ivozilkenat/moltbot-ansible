@@ -3,3 +3,13 @@
   ansible.builtin.systemd:
     name: docker
     state: restarted
+
+- name: Restart clawdbot gateway
+  ansible.builtin.shell:
+    cmd: clawdbot gateway restart
+  become: true
+  become_user: "{{ clawdbot_user }}"
+  environment:
+    PATH: "{{ clawdbot_path }}"
+    HOME: "{{ clawdbot_home }}"
+  ignore_errors: true
