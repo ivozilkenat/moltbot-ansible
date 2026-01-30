@@ -96,6 +96,19 @@
       when: is_linux and not homebrew_check.stat.exists
       register: homebrew_install_linux
 
+    - name: Make Linuxbrew accessible to all users (Linux)
+      ansible.builtin.file:
+        path: /home/linuxbrew/.linuxbrew
+        mode: '0755'
+        recurse: false
+      when: is_linux
+
+    - name: Make Linuxbrew bin directory accessible (Linux)
+      ansible.builtin.shell: |
+        chmod -R o+rX /home/linuxbrew/.linuxbrew
+      when: is_linux
+      changed_when: false
+
     - name: Install Homebrew (macOS)
       ansible.builtin.shell: |
         NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"

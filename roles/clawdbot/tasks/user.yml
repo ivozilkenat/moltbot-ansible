@@ -105,3 +105,12 @@
     group: "{{ clawdbot_user }}"
     mode: '0644'
   when: ansible_os_family == 'Debian'
+
+# Ensure clawdbot home directory has correct ownership
+- name: Ensure clawdbot home directory ownership
+  ansible.builtin.file:
+    path: "{{ clawdbot_home }}"
+    state: directory
+    owner: "{{ clawdbot_user }}"
+    group: "{{ clawdbot_user }}"
+    recurse: true
