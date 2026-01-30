@@ -1,0 +1,33 @@
+{
+  "gateway": {
+    "mode": "local",
+    "port": {{ clawdbot_gateway_port }},
+    "bind": "{{ clawdbot_gateway_bind }}",
+    "trustedProxies": {{ clawdbot_trusted_proxies | to_json }},
+    "auth": {
+      "mode": "token",
+      "token": "{{ clawdbot_gateway_token }}"
+    }
+  },
+  "agents": {
+    "defaults": {
+      "workspace": "{{ clawdbot_home }}/clawd",
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8
+      },
+      "compaction": {
+        "mode": "safeguard"
+      }
+    }
+  },
+  "skills": {
+    "install": {
+      "nodeManager": "pnpm"
+    }
+  },
+  "meta": {
+    "deployedBy": "ansible",
+    "deployedAt": "{{ ansible_date_time.iso8601 }}"
+  }
+}
