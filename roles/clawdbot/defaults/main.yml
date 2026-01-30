@@ -25,8 +25,8 @@ clawdbot_force_config: false
 clawdbot_start_daemon: true
 
 # Gateway and Reverse Proxy Settings
-# Bind address: "0.0.0.0" for all interfaces, "127.0.0.1" for localhost only
-clawdbot_gateway_bind: "0.0.0.0"
+# Bind mode: "lan" (0.0.0.0), "loopback" (127.0.0.1), "tailnet" (Tailscale IP), "auto"
+clawdbot_gateway_bind: "lan"
 
 # Enable reverse proxy mode (trust X-Forwarded-* headers)
 clawdbot_behind_proxy: true

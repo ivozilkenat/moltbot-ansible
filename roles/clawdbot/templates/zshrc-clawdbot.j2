@@ -44,7 +44,7 @@ _show_clawdbot_info() {
   echo "║         Clawdbot Dashboard                             ║"
   echo "╚════════════════════════════════════════════════════════╝"
   echo ""
-  echo "  Dashboard URL: http://{{ clawdbot_gateway_bind }}:{{ clawdbot_gateway_port }}/"
+  echo "  Dashboard URL: http://$(hostname -I | awk '{print $1}'):{{ clawdbot_gateway_port }}/"
   echo ""
   echo "  Auth Token (paste in dashboard settings):"
   echo "    {{ clawdbot_gateway_token }}"

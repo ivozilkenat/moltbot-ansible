@@ -162,7 +162,7 @@
       ║         Dashboard Ready                                ║
       ╚════════════════════════════════════════════════════════╝
 
-      Dashboard URL: http://{{ clawdbot_gateway_bind }}:{{ clawdbot_gateway_port }}/
+      Dashboard URL: http://<server-ip>:{{ clawdbot_gateway_port }}/
 
       Auth Token (paste in dashboard settings):
         {{ clawdbot_gateway_token }}
