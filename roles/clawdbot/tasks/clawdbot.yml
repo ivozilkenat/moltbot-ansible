@@ -46,7 +46,7 @@
 
 - name: Initialize clawdbot config
   ansible.builtin.shell:
-    cmd: "{{ clawdbot_bin }} setup --non-interactive"
+    cmd: "{{ clawdbot_bin }} setup --non-interactive --accept-risk"
   become: true
   become_user: "{{ clawdbot_user }}"
   environment:
