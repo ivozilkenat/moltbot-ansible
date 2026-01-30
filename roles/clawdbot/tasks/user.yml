@@ -86,3 +86,12 @@
     owner: "{{ clawdbot_user }}"
     group: "{{ clawdbot_user }}"
     recurse: true
+
+- name: Ensure Homebrew directory ownership (Linux)
+  ansible.builtin.file:
+    path: /home/linuxbrew
+    state: directory
+    owner: "{{ clawdbot_user }}"
+    group: "{{ clawdbot_user }}"
+    mode: '0755'
+  when: ansible_os_family == 'Debian'

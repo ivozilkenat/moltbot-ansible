@@ -1,4 +1,7 @@
 ---
+- name: Include prerequisites and OS detection tasks
+  ansible.builtin.include_tasks: prerequisites.yml
+
 - name: Include user creation tasks
   ansible.builtin.include_tasks: user.yml
 

@@ -38,6 +38,14 @@ clawdbot_home: /home/clawdbot
 homebrew_prefix: "{{ '/opt/homebrew' if ansible_os_family == 'Darwin' else '/home/linuxbrew/.linuxbrew' }}"
 package_manager: "{{ 'brew' if ansible_os_family == 'Darwin' else 'apt' }}"
 
+# PATH configuration for clawdbot user
+# Full PATH including pnpm, local binaries, and Homebrew
+clawdbot_path: "{{ clawdbot_home }}/.local/share/pnpm:{{ clawdbot_home }}/.local/bin:{{ homebrew_prefix }}/bin:/usr/local/bin:/usr/bin:/bin"
+# PATH without pnpm (for tasks that don't need pnpm)
+clawdbot_path_minimal: "{{ clawdbot_home }}/.local/bin:{{ homebrew_prefix }}/bin:/usr/local/bin:/usr/bin:/bin"
+# PATH for macOS Homebrew-only (for system tools that need brew)
+clawdbot_path_homebrew: "{{ homebrew_prefix }}/bin:{{ ansible_env.PATH | default('/usr/local/bin:/usr/bin:/bin') }}"
+
 # Installation mode: 'release' or 'development'
 # release: Install via pnpm install -g clawdbot@latest
 # development: Clone repo, build from source, link globally

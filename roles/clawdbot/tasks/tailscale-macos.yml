@@ -11,7 +11,7 @@
     name: tailscale
     state: present
   environment:
-    PATH: "/opt/homebrew/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ clawdbot_path_homebrew }}"
   when: not tailscale_app_macos.stat.exists
 
 - name: Check if Tailscale is running (macOS)

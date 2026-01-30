@@ -7,7 +7,7 @@
     group: "{{ clawdbot_user }}"
     mode: "{{ item.mode }}"
   loop:
-    - { path: "{{ clawdbot_config_dir }}", mode: '0755' }
+    - { path: "{{ clawdbot_config_dir }}", mode: '0700' }
     - { path: "{{ clawdbot_config_dir }}/sessions", mode: '0755' }
     - { path: "{{ clawdbot_config_dir }}/credentials", mode: '0700' }
     - { path: "{{ clawdbot_config_dir }}/data", mode: '0755' }

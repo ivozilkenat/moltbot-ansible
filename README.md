@@ -142,7 +142,7 @@ By default, the gateway:
 Override in your vars.yml or command line:
 
 ```yaml
-# Custom trusted networks
+# Custom trusted networks (for UFW firewall rules)
 clawdbot_allowed_networks:
   - { ip: "100.64.0.0/10", comment: "All Tailscale IPs" }
   - { ip: "10.0.0.0/8", comment: "Private network" }
@@ -151,9 +151,26 @@ clawdbot_allowed_networks:
 clawdbot_trusted_proxies:
   - "100.64.0.0/10"
   - "10.0.0.0/8"
+```
 
-# Bind to localhost only (if not using proxy)
+### Proxy on Same Machine (localhost only)
+
+If your reverse proxy runs on the **same host** as Clawdbot:
+
+```yaml
+# Only accept connections from localhost
 clawdbot_gateway_bind: "127.0.0.1"
+clawdbot_behind_proxy: true
+clawdbot_trusted_proxies:
+  - "127.0.0.1"
+```
+
+### No Proxy (direct access)
+
+If not using a reverse proxy at all:
+
+```yaml
+clawdbot_gateway_bind: "0.0.0.0"
 clawdbot_behind_proxy: false
 ```
 
