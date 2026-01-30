@@ -42,8 +42,9 @@
   ansible.builtin.shell:
     cmd: |
       tailscale up --authkey {{ tailscale_authkey }} \
-        {{ '--hostname ' + tailscale_hostname if tailscale_hostname else '' }} \
-        {{ '--login-server ' + tailscale_login_server if tailscale_login_server else '' }}
+        --hostname {{ tailscale_hostname if tailscale_hostname else ansible_hostname }} \
+        --login-server {{ tailscale_login_server }} \
+        --accept-dns={{ tailscale_accept_dns | lower }}
     executable: /bin/bash
   when: tailscale_authkey | length > 0
 

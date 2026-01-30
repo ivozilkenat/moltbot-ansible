@@ -40,7 +40,7 @@ This will:
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `--ts-authkey` | (optional) | Tailscale auth key - if not provided, Tailscale is installed but not connected |
-| `--ts-hostname` | (optional) | Hostname for this machine in Tailnet |
+| `--ts-hostname` | system hostname | Hostname for this machine in Tailnet |
 | `--ts-login-server` | `https://vpn.ivo-zilkenat.de` | Custom login server URL |
 | `--gateway-bind` | `lan` | Gateway bind mode: `lan`, `loopback`, `tailnet` |
 | `--gateway-token` | (auto-generated) | Specific gateway token |
@@ -180,9 +180,9 @@ The gateway is accessible from:
 ### Gateway Settings
 
 By default, the gateway:
-- Binds to `0.0.0.0:3000` (all interfaces)
+- Binds to `0.0.0.0:18789` (all interfaces)
 - Trusts `X-Forwarded-*` headers from configured proxies
-- UFW allows port 3000 from trusted networks only
+- UFW allows port 18789 from trusted networks only
 
 ### Customizing Network Access
 
@@ -237,7 +237,7 @@ http:
     clawdbot:
       loadBalancer:
         servers:
-          - url: "http://clawdbot-host:3000"
+          - url: "http://clawdbot-host:18789"
 ```
 
 ## Documentation
@@ -366,6 +366,8 @@ Edit `roles/clawdbot/defaults/main.yml` before running the playbook.
 | `clawdbot_repo_url` | `https://github.com/clawdbot/clawdbot.git` | Git repository (dev mode) |
 | `clawdbot_repo_branch` | `main` | Git branch (dev mode) |
 | `tailscale_authkey` | `""` | Tailscale auth key for auto-connect |
+| `tailscale_hostname` | system hostname | Hostname in Tailnet |
+| `tailscale_login_server` | `https://vpn.ivo-zilkenat.de` | Headscale/login server URL |
 | `nodejs_version` | `22.x` | Node.js version to install |
 
 See [`roles/clawdbot/defaults/main.yml`](roles/clawdbot/defaults/main.yml) for the complete list.

@@ -3,7 +3,7 @@
 
 # Tailscale settings
 tailscale_authkey: ""                              # Optional: set to auto-connect during installation
-tailscale_hostname: ""                             # Custom hostname (optional)
+tailscale_hostname: ""                             # Custom hostname (defaults to system hostname if empty)
 tailscale_login_server: "https://vpn.ivo-zilkenat.de"  # Headscale server (default)
 tailscale_accept_dns: true                         # Accept Tailscale DNS
 
