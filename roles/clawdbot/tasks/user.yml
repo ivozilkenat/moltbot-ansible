@@ -1,4 +1,11 @@
 ---
+- name: Install zsh before user creation
+  ansible.builtin.apt:
+    name: zsh
+    state: present
+    update_cache: true
+  when: ansible_os_family == 'Debian'
+
 - name: Create clawdbot system user
   ansible.builtin.user:
     name: "{{ clawdbot_user }}"
