@@ -57,24 +57,29 @@
 
 - name: Install clawdbot gateway service
   ansible.builtin.shell:
-    cmd: "{{ clawdbot_bin }} gateway install --force"
-  become: true
-  become_user: "{{ clawdbot_user }}"
-  environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ clawdbot_uid_value }}"
-    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ clawdbot_uid_value }}/bus"
+    cmd: |
+      runuser -u {{ clawdbot_user }} -- env \
+        XDG_RUNTIME_DIR=/run/user/{{ clawdbot_uid_value }} \
+        DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{{ clawdbot_uid_value }}/bus \
+        {{ clawdbot_bin }} gateway install --force
+    executable: /bin/bash
 
 - name: Configure gateway settings
   ansible.builtin.shell:
     cmd: |
-      {{ clawdbot_bin }} config set gateway.mode {{ clawdbot_gateway_mode }}
-      {{ clawdbot_bin }} config set gateway.bind {{ clawdbot_gateway_bind }}
-      {{ clawdbot_bin }} config set gateway.auth.token "{{ clawdbot_gateway_token }}"
-  become: true
-  become_user: "{{ clawdbot_user }}"
-  environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ clawdbot_uid_value }}"
-    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ clawdbot_uid_value }}/bus"
+      runuser -u {{ clawdbot_user }} -- env \
+        XDG_RUNTIME_DIR=/run/user/{{ clawdbot_uid_value }} \
+        DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{{ clawdbot_uid_value }}/bus \
+        {{ clawdbot_bin }} config set gateway.mode {{ clawdbot_gateway_mode }}
+      runuser -u {{ clawdbot_user }} -- env \
+        XDG_RUNTIME_DIR=/run/user/{{ clawdbot_uid_value }} \
+        DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{{ clawdbot_uid_value }}/bus \
+        {{ clawdbot_bin }} config set gateway.bind {{ clawdbot_gateway_bind }}
+      runuser -u {{ clawdbot_user }} -- env \
+        XDG_RUNTIME_DIR=/run/user/{{ clawdbot_uid_value }} \
+        DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{{ clawdbot_uid_value }}/bus \
+        {{ clawdbot_bin }} config set gateway.auth.token "{{ clawdbot_gateway_token }}"
+    executable: /bin/bash
 
 - name: Create trusted proxies config script
   ansible.builtin.copy:
@@ -85,31 +90,31 @@
 
 - name: Set trusted proxies
   ansible.builtin.shell:
-    cmd: bash /tmp/set_proxies.sh
-  become: true
-  become_user: "{{ clawdbot_user }}"
-  environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ clawdbot_uid_value }}"
-    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ clawdbot_uid_value }}/bus"
+    cmd: |
+      runuser -u {{ clawdbot_user }} -- env \
+        XDG_RUNTIME_DIR=/run/user/{{ clawdbot_uid_value }} \
+        DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{{ clawdbot_uid_value }}/bus \
+        bash /tmp/set_proxies.sh
+    executable: /bin/bash
 
 - name: Start clawdbot gateway
   ansible.builtin.shell:
-    cmd: "{{ clawdbot_bin }} gateway restart"
-  become: true
-  become_user: "{{ clawdbot_user }}"
-  environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ clawdbot_uid_value }}"
-    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ clawdbot_uid_value }}/bus"
+    cmd: |
+      runuser -u {{ clawdbot_user }} -- env \
+        XDG_RUNTIME_DIR=/run/user/{{ clawdbot_uid_value }} \
+        DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{{ clawdbot_uid_value }}/bus \
+        {{ clawdbot_bin }} gateway restart
+    executable: /bin/bash
   when: clawdbot_start_daemon | bool
 
 - name: Verify gateway is running
   ansible.builtin.shell:
-    cmd: "{{ clawdbot_bin }} gateway status"
-  become: true
-  become_user: "{{ clawdbot_user }}"
-  environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ clawdbot_uid_value }}"
-    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ clawdbot_uid_value }}/bus"
+    cmd: |
+      runuser -u {{ clawdbot_user }} -- env \
+        XDG_RUNTIME_DIR=/run/user/{{ clawdbot_uid_value }} \
+        DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{{ clawdbot_uid_value }}/bus \
+        {{ clawdbot_bin }} gateway status
+    executable: /bin/bash
   register: gateway_status
   when: clawdbot_start_daemon | bool
 
