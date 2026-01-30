@@ -31,14 +31,6 @@
   ansible.builtin.include_tasks: clawdbot-development.yml
   when: clawdbot_install_mode == "development"
 
-- name: Deploy zshrc for clawdbot user
-  ansible.builtin.template:
-    src: zshrc-clawdbot.j2
-    dest: "{{ clawdbot_home }}/.zshrc"
-    owner: "{{ clawdbot_user }}"
-    group: "{{ clawdbot_user }}"
-    mode: '0644'
-
 - name: Generate gateway token if not set
   ansible.builtin.set_fact:
     clawdbot_gateway_token: "{{ lookup('community.general.random_string', length=64, base64=false, special=false) }}"
