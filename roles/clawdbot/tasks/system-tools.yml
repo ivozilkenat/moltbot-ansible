@@ -28,6 +28,29 @@
     HOME: "{{ clawdbot_home }}"
     USER: "{{ clawdbot_user }}"
 
+- name: Check if .zshrc has oh-my-zsh configuration
+  ansible.builtin.stat:
+    path: "{{ clawdbot_home }}/.zshrc"
+  register: zshrc_stat
+
+- name: Check if .zshrc contains ZSH_THEME (oh-my-zsh marker)
+  ansible.builtin.shell:
+    cmd: grep -q "ZSH_THEME" "{{ clawdbot_home }}/.zshrc" 2>/dev/null || echo "missing"
+  register: zshrc_has_ohmyzsh
+  changed_when: false
+  failed_when: false
+  when: zshrc_stat.stat.exists
+
+- name: Restore oh-my-zsh .zshrc template if corrupted
+  ansible.builtin.copy:
+    src: "{{ clawdbot_home }}/.oh-my-zsh/templates/zshrc.zsh-template"
+    dest: "{{ clawdbot_home }}/.zshrc"
+    owner: "{{ clawdbot_user }}"
+    group: "{{ clawdbot_user }}"
+    mode: '0644'
+    remote_src: true
+  when: zshrc_stat.stat.exists and zshrc_has_ohmyzsh.stdout == "missing"
+
 - name: Configure .zshrc for clawdbot user (after oh-my-zsh)
   ansible.builtin.blockinfile:
     path: "{{ clawdbot_home }}/.zshrc"
