@@ -44,9 +44,9 @@
     clawdbot_gateway_token: "{{ lookup('community.general.random_string', length=64, base64=false, special=false) }}"
   when: clawdbot_gateway_token | length == 0
 
-- name: Initialize clawdbot config
+- name: Initialize clawdbot config directories
   ansible.builtin.shell:
-    cmd: "{{ clawdbot_bin }} setup --non-interactive --accept-risk"
+    cmd: "{{ clawdbot_bin }} setup"
   become: true
   become_user: "{{ clawdbot_user }}"
   environment:
@@ -92,7 +92,7 @@
     XDG_RUNTIME_DIR: "/run/user/{{ clawdbot_uid_value }}"
     DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ clawdbot_uid_value }}/bus"
 
-- name: Restart clawdbot gateway
+- name: Start clawdbot gateway
   ansible.builtin.shell:
     cmd: "{{ clawdbot_bin }} gateway restart"
   become: true
@@ -101,6 +101,22 @@
     XDG_RUNTIME_DIR: "/run/user/{{ clawdbot_uid_value }}"
     DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ clawdbot_uid_value }}/bus"
   when: clawdbot_start_daemon | bool
+
+- name: Verify gateway is running
+  ansible.builtin.shell:
+    cmd: "{{ clawdbot_bin }} gateway status"
+  become: true
+  become_user: "{{ clawdbot_user }}"
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ clawdbot_uid_value }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ clawdbot_uid_value }}/bus"
+  register: gateway_status
+  when: clawdbot_start_daemon | bool
+
+- name: Display gateway status
+  ansible.builtin.debug:
+    msg: "{{ gateway_status.stdout_lines }}"
+  when: clawdbot_start_daemon | bool and gateway_status is defined
 
 - name: Configure .bashrc for clawdbot user
   ansible.builtin.blockinfile:
