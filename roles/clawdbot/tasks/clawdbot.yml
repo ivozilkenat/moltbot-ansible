@@ -54,7 +54,7 @@
     group: "{{ clawdbot_user }}"
     mode: '0600'
   when: not existing_config.stat.exists or clawdbot_force_config
-  notify: Restart clawdbot gateway
+  # Note: Service restart handled manually after gateway installation
 
 - name: Create pnpm directories
   ansible.builtin.file:
@@ -114,56 +114,47 @@
     mode: '0644'
     insertafter: EOF
 
-# Deploy system service (Moltbot recommended for always-on servers)
-# See: https://docs.molt.bot/gateway#supervision-systemd-user-unit
-- name: Deploy clawdbot gateway system service
-  ansible.builtin.template:
-    src: clawdbot-host.service.j2
-    dest: /etc/systemd/system/clawdbot.service
-    owner: root
-    group: root
-    mode: '0644'
-  notify: Reload systemd
-  when: ansible_os_family == 'Debian'
-
-- name: Enable and start clawdbot gateway
-  ansible.builtin.systemd:
-    name: clawdbot
-    enabled: true
-    state: started
-    daemon_reload: true
-  when: ansible_os_family == 'Debian' and clawdbot_start_daemon
-
-# Verify gateway is running
-- name: Check gateway status
-  ansible.builtin.command: systemctl is-active clawdbot
-  register: gateway_status
-  changed_when: false
-  failed_when: false
-  when: ansible_os_family == 'Debian'
-
-- name: Display dashboard info
+# Note: Gateway service installation requires an interactive session.
+# The clawdbot CLI needs D-Bus which isn't available via Ansible become_user.
+# See: https://docs.clawd.bot/install/ansible for official deployment approach.
+- name: Display post-install instructions
   ansible.builtin.debug:
     msg: |
-      ✅ Clawdbot Gateway is installed and running!
+      ✅ Clawdbot is installed!
 
       ╔════════════════════════════════════════════════════════╗
-      ║         Dashboard Ready                                ║
+      ║         Post-Install Setup Required                    ║
       ╚════════════════════════════════════════════════════════╝
 
-      Dashboard URL: http://<server-ip>:{{ clawdbot_gateway_port }}/
+      To complete setup, log in as the moltbot user and install the gateway service:
+
+      1. Log in as moltbot user:
+         sudo -i -u {{ clawdbot_user }}
+
+      2. Install and start the gateway service:
+         moltbot doctor --repair
+         # or
+         moltbot gateway install
+         moltbot gateway start
+
+      3. Access dashboard at:
+         http://<server-ip>:{{ clawdbot_gateway_port }}/
 
       Auth Token (paste in dashboard settings):
         {{ clawdbot_gateway_token }}
 
       Next Steps:
-      1. Open the dashboard URL in your browser
-      2. Paste the auth token in settings
-      3. Connect a messaging provider (WhatsApp, Telegram, etc.)
-      4. Configure AI model API keys
+      1. Complete gateway installation (see above)
+      2. Open the dashboard URL in your browser
+      3. Paste the auth token in settings
+      4. Connect a messaging provider (WhatsApp, Telegram, etc.)
+      5. Configure AI model API keys
 
-      Quick Commands (as clawdbot user):
-        clawdbot gateway status     # Check gateway status
-        clawdbot providers login    # Connect messaging provider
-        clawdbot config set <k> <v> # Change settings
-        clawdbot security audit     # Security check
+      Quick Commands (as {{ clawdbot_user }} user):
+        moltbot gateway status     # Check gateway status
+        moltbot providers login    # Connect messaging provider
+        moltbot config set <k> <v> # Change settings
+        moltbot security audit     # Security check
+
+      Note: Gateway service installation requires D-Bus access which is only
+      available in interactive login sessions, not via Ansible become_user.
