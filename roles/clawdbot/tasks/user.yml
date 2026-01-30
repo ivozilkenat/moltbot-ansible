@@ -4,7 +4,7 @@
     name: "{{ clawdbot_user }}"
     comment: "Clawdbot Service User"
     system: true
-    shell: /bin/bash
+    shell: /usr/bin/zsh
     create_home: true
     home: "{{ clawdbot_home }}"
     state: present
@@ -77,34 +77,6 @@
   ansible.builtin.debug:
     msg: "⚠️  No SSH keys configured. Set 'clawdbot_ssh_keys' variable to allow SSH access."
   when: clawdbot_ssh_keys | length == 0
-
-- name: Set XDG_RUNTIME_DIR in .bashrc for clawdbot user
-  ansible.builtin.lineinfile:
-    path: "{{ clawdbot_home }}/.bashrc"
-    line: 'export XDG_RUNTIME_DIR=/run/user/$(id -u)'
-    state: present
-    create: true
-    owner: "{{ clawdbot_user }}"
-    group: "{{ clawdbot_user }}"
-    mode: '0644'
-  when: ansible_os_family == 'Debian'
-
-- name: Set DBUS_SESSION_BUS_ADDRESS in .bashrc for clawdbot user
-  ansible.builtin.blockinfile:
-    path: "{{ clawdbot_home }}/.bashrc"
-    marker: "# {mark} ANSIBLE MANAGED BLOCK - DBus config"
-    block: |
-      # DBus session bus configuration
-      if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
-        if [ -f "${XDG_RUNTIME_DIR}/bus" ]; then
-          export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus"
-        fi
-      fi
-    create: true
-    owner: "{{ clawdbot_user }}"
-    group: "{{ clawdbot_user }}"
-    mode: '0644'
-  when: ansible_os_family == 'Debian'
 
 # Ensure clawdbot home directory has correct ownership
 - name: Ensure clawdbot home directory ownership

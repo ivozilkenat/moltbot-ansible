@@ -224,9 +224,9 @@
           echo ""
           rm -f ~/.clawdbot-welcome
 
-    - name: Add welcome message to .bashrc
+    - name: Add welcome message to .zshrc
       ansible.builtin.lineinfile:
-        path: "{{ clawdbot_home }}/.bashrc"
+        path: "{{ clawdbot_home }}/.zshrc"
         line: '[ -f ~/.clawdbot-welcome ] && source ~/.clawdbot-welcome'
         state: present
         insertafter: EOF

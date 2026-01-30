@@ -127,7 +127,7 @@ This installer configures Clawdbot to work behind a reverse proxy (like Traefik)
 ### Default Network Access
 
 The gateway is accessible from:
-- **Tailscale**: `100.64.0.24/32` (your Traefik proxy host)
+- **Tailscale**: `100.64.0.0/32` (your Traefik proxy host)
 - **Local Network**: `192.168.1.0/24`
 
 ### Gateway Settings

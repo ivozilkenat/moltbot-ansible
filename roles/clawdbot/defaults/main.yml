@@ -19,12 +19,12 @@ clawdbot_behind_proxy: true
 
 # Trusted proxy IP addresses and networks
 clawdbot_trusted_proxies:
-  - "100.64.0.24/32"   # Tailscale proxy host
+  - "100.64.0.0/32"   # Tailscale proxy host
   - "192.168.1.0/24"   # Local network
 
 # Networks allowed to access the gateway via UFW
 clawdbot_allowed_networks:
-  - { ip: "100.64.0.24/32", comment: "Tailscale proxy host" }
+  - { ip: "100.64.0.0/32", comment: "Tailscale proxy host" }
   - { ip: "192.168.1.0/24", comment: "Local network" }
 
 # Clawdbot config directory
