@@ -4,12 +4,12 @@
     name: docker
     state: restarted
 
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
 - name: Restart clawdbot gateway
-  ansible.builtin.shell:
-    cmd: clawdbot gateway restart
-  become: true
-  become_user: "{{ clawdbot_user }}"
-  environment:
-    PATH: "{{ clawdbot_path }}"
-    HOME: "{{ clawdbot_home }}"
-  ignore_errors: true
+  ansible.builtin.systemd:
+    name: clawdbot
+    state: restarted
+  when: ansible_os_family == 'Debian'

@@ -114,50 +114,33 @@
     mode: '0644'
     insertafter: EOF
 
-# Install gateway daemon (systemd service on Linux, launchd on macOS)
-- name: Install clawdbot gateway
-  ansible.builtin.shell:
-    cmd: clawdbot gateway install
-  become: true
-  become_user: "{{ clawdbot_user }}"
-  environment:
-    PATH: "{{ clawdbot_path }}"
-    HOME: "{{ clawdbot_home }}"
-    XDG_RUNTIME_DIR: "{{ '/run/user/' + clawdbot_uid_value if clawdbot_uid_value is defined else '' }}"
-    DBUS_SESSION_BUS_ADDRESS: "{{ 'unix:path=/run/user/' + clawdbot_uid_value + '/bus' if clawdbot_uid_value is defined else '' }}"
-  register: gateway_install
-  changed_when: "'installed' in gateway_install.stdout or gateway_install.rc == 0"
+# Deploy system service (Moltbot recommended for always-on servers)
+# See: https://docs.molt.bot/gateway#supervision-systemd-user-unit
+- name: Deploy clawdbot gateway system service
+  ansible.builtin.template:
+    src: clawdbot-host.service.j2
+    dest: /etc/systemd/system/clawdbot.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload systemd
+  when: ansible_os_family == 'Debian'
 
-# Start gateway daemon
-- name: Start clawdbot gateway
-  ansible.builtin.shell:
-    cmd: clawdbot gateway start
-  become: true
-  become_user: "{{ clawdbot_user }}"
-  environment:
-    PATH: "{{ clawdbot_path }}"
-    HOME: "{{ clawdbot_home }}"
-    XDG_RUNTIME_DIR: "{{ '/run/user/' + clawdbot_uid_value if clawdbot_uid_value is defined else '' }}"
-    DBUS_SESSION_BUS_ADDRESS: "{{ 'unix:path=/run/user/' + clawdbot_uid_value + '/bus' if clawdbot_uid_value is defined else '' }}"
-  when: clawdbot_start_daemon
-  register: gateway_start
-  changed_when: "'started' in gateway_start.stdout or gateway_start.rc == 0"
-  ignore_errors: true  # May already be running
+- name: Enable and start clawdbot gateway
+  ansible.builtin.systemd:
+    name: clawdbot
+    enabled: true
+    state: started
+    daemon_reload: true
+  when: ansible_os_family == 'Debian' and clawdbot_start_daemon
 
 # Verify gateway is running
 - name: Check gateway status
-  ansible.builtin.shell:
-    cmd: clawdbot gateway status
-  become: true
-  become_user: "{{ clawdbot_user }}"
-  environment:
-    PATH: "{{ clawdbot_path }}"
-    HOME: "{{ clawdbot_home }}"
-    XDG_RUNTIME_DIR: "{{ '/run/user/' + clawdbot_uid_value if clawdbot_uid_value is defined else '' }}"
-    DBUS_SESSION_BUS_ADDRESS: "{{ 'unix:path=/run/user/' + clawdbot_uid_value + '/bus' if clawdbot_uid_value is defined else '' }}"
+  ansible.builtin.command: systemctl is-active clawdbot
   register: gateway_status
   changed_when: false
-  ignore_errors: true
+  failed_when: false
+  when: ansible_os_family == 'Debian'
 
 - name: Display dashboard info
   ansible.builtin.debug:
