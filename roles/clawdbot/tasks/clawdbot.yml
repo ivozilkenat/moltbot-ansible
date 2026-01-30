@@ -123,6 +123,8 @@
   environment:
     PATH: "{{ clawdbot_path }}"
     HOME: "{{ clawdbot_home }}"
+    XDG_RUNTIME_DIR: "{{ '/run/user/' + clawdbot_uid_value if clawdbot_uid_value is defined else '' }}"
+    DBUS_SESSION_BUS_ADDRESS: "{{ 'unix:path=/run/user/' + clawdbot_uid_value + '/bus' if clawdbot_uid_value is defined else '' }}"
   register: gateway_install
   changed_when: "'installed' in gateway_install.stdout or gateway_install.rc == 0"
 
@@ -135,6 +137,8 @@
   environment:
     PATH: "{{ clawdbot_path }}"
     HOME: "{{ clawdbot_home }}"
+    XDG_RUNTIME_DIR: "{{ '/run/user/' + clawdbot_uid_value if clawdbot_uid_value is defined else '' }}"
+    DBUS_SESSION_BUS_ADDRESS: "{{ 'unix:path=/run/user/' + clawdbot_uid_value + '/bus' if clawdbot_uid_value is defined else '' }}"
   when: clawdbot_start_daemon
   register: gateway_start
   changed_when: "'started' in gateway_start.stdout or gateway_start.rc == 0"
@@ -149,6 +153,8 @@
   environment:
     PATH: "{{ clawdbot_path }}"
     HOME: "{{ clawdbot_home }}"
+    XDG_RUNTIME_DIR: "{{ '/run/user/' + clawdbot_uid_value if clawdbot_uid_value is defined else '' }}"
+    DBUS_SESSION_BUS_ADDRESS: "{{ 'unix:path=/run/user/' + clawdbot_uid_value + '/bus' if clawdbot_uid_value is defined else '' }}"
   register: gateway_status
   changed_when: false
   ignore_errors: true
