@@ -6,9 +6,6 @@
 
   vars:
     ansible_python_interpreter: /usr/bin/python3
-    # Import role defaults for use in post_tasks
-    clawdbot_user: "{{ clawdbot_user | default('clawdbot') }}"
-    clawdbot_home: "{{ clawdbot_home | default('/home/clawdbot') }}"
 
   environment:
     TERM: xterm-256color

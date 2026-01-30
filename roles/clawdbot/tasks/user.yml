@@ -20,11 +20,6 @@
       {{ clawdbot_user }} ALL=(ALL) NOPASSWD: ALL
     validate: /usr/sbin/visudo -cf %s
 
-- name: Set clawdbot user as primary user for installation
-  ansible.builtin.set_fact:
-    clawdbot_user: "{{ clawdbot_user }}"
-    clawdbot_home: "{{ clawdbot_home }}"
-
 # Fix DBus issues for systemd user services
 - name: Get clawdbot user ID
   ansible.builtin.command: id -u {{ clawdbot_user }}
