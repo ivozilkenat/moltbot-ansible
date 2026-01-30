@@ -40,20 +40,16 @@
   ansible.builtin.file:
     path: /home/linuxbrew
     state: directory
+    owner: "{{ clawdbot_user }}"
+    group: "{{ clawdbot_user }}"
     mode: '0755'
   when: is_linux and not homebrew_check.stat.exists
-  # Note: Ownership will be set after user creation in user.yml
 
 - name: Install Homebrew as clawdbot user (Linux)
   ansible.builtin.shell: |
-    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    su - {{ clawdbot_user }} -c 'NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
   args:
     creates: /home/linuxbrew/.linuxbrew/bin/brew
-  become: true
-  become_user: "{{ clawdbot_user }}"
-  environment:
-    HOME: "{{ clawdbot_home }}"
-    USER: "{{ clawdbot_user }}"
   when: is_linux and not homebrew_check.stat.exists
   register: homebrew_install_linux
 
