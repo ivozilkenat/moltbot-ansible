@@ -97,8 +97,18 @@
       export TERM=xterm-256color
       export COLORTERM=truecolor
 
+      # XDG and DBus configuration for systemd user services
+      export XDG_RUNTIME_DIR=/run/user/$(id -u)
+      if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
+        if [ -f "${XDG_RUNTIME_DIR}/bus" ]; then
+          export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus"
+        fi
+      fi
+
       # Add Homebrew to PATH (Linux)
-      eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+      if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+      fi
 
       # Add pnpm to PATH
       export PNPM_HOME="{{ clawdbot_home }}/.local/share/pnpm"
