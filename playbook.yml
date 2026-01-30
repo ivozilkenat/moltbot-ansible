@@ -93,13 +93,7 @@
 
     - name: Install Homebrew (Linux)
       ansible.builtin.shell: |
-        NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-      become: true
-      become_user: linuxbrew
-      become_method: su
-      environment:
-        HOME: /home/linuxbrew
-        USER: linuxbrew
+        su - linuxbrew -c 'NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
       args:
         creates: /home/linuxbrew/.linuxbrew/bin/brew
       when: is_linux and not homebrew_check.stat.exists
