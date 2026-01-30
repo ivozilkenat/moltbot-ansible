@@ -53,6 +53,20 @@
     mode: '0700'
   when: ansible_os_family == 'Debian'
 
+- name: Start systemd user instance for clawdbot (creates D-Bus socket)
+  ansible.builtin.systemd:
+    name: "user@{{ clawdbot_uid.stdout }}.service"
+    state: started
+    scope: system
+  when: ansible_os_family == 'Debian'
+
+- name: Wait for D-Bus socket to be available
+  ansible.builtin.wait_for:
+    path: "/run/user/{{ clawdbot_uid.stdout }}/bus"
+    state: present
+    timeout: 30
+  when: ansible_os_family == 'Debian'
+
 - name: Store clawdbot UID as fact for later use
   ansible.builtin.set_fact:
     clawdbot_uid_value: "{{ clawdbot_uid.stdout }}"
