@@ -25,7 +25,7 @@ Automated, hardened installation of [Clawdbot](https://github.com/clawdbot/clawd
 One-liner install with Tailscale auto-connect:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ivozilkenat/moltbot-ansible/main/install.sh | bash -s -- \
+curl -fsSL https://raw.githubusercontent.com/ivozilkenat/moltbot-ansible/main/install.sh | sudo bash -s -- \
   --ts-authkey YOUR_TAILSCALE_AUTHKEY \
   --ts-hostname YOUR_HOSTNAME
 ```

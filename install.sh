@@ -46,27 +46,22 @@ else
     exit 1
 fi
 
-# Check if running as root or with sudo access
-if [ "$EUID" -eq 0 ]; then
-    echo -e "${GREEN}Running as root.${NC}"
-    SUDO=""
-    ANSIBLE_EXTRA_VARS="-e ansible_become=false"
-else
-    if ! command -v sudo &> /dev/null; then
-        echo -e "${RED}Error: sudo is not installed. Please install sudo or run as root.${NC}"
-        exit 1
-    fi
-    SUDO="sudo"
-    ANSIBLE_EXTRA_VARS="--ask-become-pass"
+# Require root
+if [ "$EUID" -ne 0 ]; then
+    echo -e "${RED}Error: This script must be run as root.${NC}"
+    echo -e "${YELLOW}Usage: curl -fsSL ... | sudo bash -s -- [options]${NC}"
+    exit 1
 fi
+echo -e "${GREEN}Running as root.${NC}"
+ANSIBLE_EXTRA_VARS="-e ansible_become=false"
 
 echo -e "${GREEN}[1/4] Checking prerequisites...${NC}"
 
 # Check if Ansible is installed
 if ! command -v ansible-playbook &> /dev/null; then
     echo -e "${YELLOW}Ansible not found. Installing...${NC}"
-    $SUDO apt-get update -qq
-    $SUDO apt-get install -y ansible
+    apt-get update -qq
+    apt-get install -y ansible
     echo -e "${GREEN}✓ Ansible installed${NC}"
 else
     echo -e "${GREEN}✓ Ansible already installed${NC}"
